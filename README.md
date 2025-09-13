@@ -253,13 +253,12 @@ Access the admin interface at `/admin/` with superuser credentials.
 - **Video Explanations**: Add video explanations for quiz answers
 - **Certification System**: Issue certificates for high performers
 
-## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+
 
 ## Support
 
-For support and questions, please open an issue in the repository or contact the development team.
+For support and questions, please open an issue in the repository or contact me.
 
 ---
 
