@@ -1,0 +1,86 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Search Users - QuizHub{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-search"></i> Search Users</h2>
+        
+        <form method="get" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control form-control-lg" 
+                       placeholder="Search for users by username or name..." 
+                       value="{{ query }}" autocomplete="off">
+                <button class="btn btn-primary" type="submit">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </form>
+        
+        {% if query %}
+        <div class="mb-3">
+            <h5>Search results for "{{ query }}"</h5>
+        </div>
+        
+        {% if users %}
+        <div class="row">
+            {% for user in users %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-user-circle fa-3x text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="card-title mb-1">{{ user.username }}</h6>
+                                {% if user.first_name or user.last_name %}
+                                <p class="card-text text-muted small mb-1">
+                                    {{ user.first_name }} {{ user.last_name }}
+                                </p>
+                                {% endif %}
+                                <small class="text-muted">
+                                    Member since {{ user.date_joined|date:"M Y" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'profiles:profile' user.username %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye"></i> View Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No users found matching "{{ query }}".
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Auto-submit search form on input
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[name="q"]');
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        
+        if (query.length >= 2) {
+            searchTimeout = setTimeout(() => {
+                // You can implement AJAX search here for real-time results
+                console.log('Searching for:', query);
+            }, 300);
+        }
+    });
+});
+</script>
+{% endblock %}

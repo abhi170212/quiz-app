@@ -1,0 +1,360 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ profile_user.username }}'s Profile - QuizHub{% endblock %}
+
+{% block content %}
+<!-- Profile Header -->
+<div class="profile-header text-center">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-3">
+                {% if profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}" alt="{{ profile_user.username }}" class="profile-avatar">
+                {% else %}
+                <i class="fas fa-user-circle fa-7x"></i>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <h2>{{ profile_user.username }}</h2>
+                {% if profile_user.first_name or profile_user.last_name %}
+                <h5 class="mb-3">{{ profile_user.first_name }} {{ profile_user.last_name }}</h5>
+                {% endif %}
+                {% if profile.bio %}
+                <p class="lead">{{ profile.bio }}</p>
+                {% endif %}
+                <div class="profile-meta">
+                    <small><i class="fas fa-calendar"></i> Member since {{ profile_user.date_joined|date:"M Y" }}</small>
+                    {% if profile.location %}
+                    <br><small><i class="fas fa-map-marker-alt"></i> {{ profile.location }}</small>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-3">
+                {% if user.is_authenticated and user != profile_user %}
+                <div class="profile-actions">
+                    <button id="upvoteBtn" class="btn upvote-btn {% if has_upvoted %}upvoted{% endif %}" 
+                            onclick="toggleUpvote('{{ profile_user.username }}')">
+                        {% if has_upvoted %}
+                        <i class="fas fa-thumbs-up"></i> Upvoted
+                        {% else %}
+                        <i class="far fa-thumbs-up"></i> Upvote
+                        {% endif %}
+                    </button>
+                </div>
+                {% elif user == profile_user %}
+                <div class="profile-actions">
+                    <a href="{% url 'profiles:edit_profile' profile_user.username %}" class="btn btn-outline-light">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card">
+                        <span class="stats-number">{{ quiz_stats.total_attempts }}</span>
+                        <small>Quizzes Taken</small>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card">
+                        <span class="stats-number">{{ quiz_stats.average_score }}%</span>
+                        <small>Average Score</small>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card">
+                        <span class="stats-number">{{ quiz_stats.best_score }}%</span>
+                        <small>Best Score</small>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="stats-card">
+                        <span class="stats-number" id="upvoteCount">{{ profile.total_upvotes }}</span>
+                        <small>Upvotes</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz History -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-history"></i> Recent Quiz Attempts</h5>
+                </div>
+                <div class="card-body">
+                    {% if quiz_attempts %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Quiz</th>
+                                    <th>Language</th>
+                                    <th>Score</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attempt in quiz_attempts %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ attempt.quiz.title }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ attempt.quiz.difficulty|title }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="language-badge language-{{ attempt.quiz.language }} text-white">
+                                            {{ attempt.quiz.get_language_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if attempt.score >= 80 %}bg-success{% elif attempt.score >= 60 %}bg-warning{% else %}bg-secondary{% endif %}">
+                                            {{ attempt.score }}%
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">{{ attempt.correct_answers }}/{{ attempt.total_questions }}</small>
+                                    </td>
+                                    <td>
+                                        <small>{{ attempt.completed_at|date:"M d, Y" }}</small>
+                                        <br>
+                                        <small class="text-muted">{{ attempt.completed_at|time:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if user == profile_user or user.is_staff %}
+                                        <a href="{% url 'quizzes:quiz_result' attempt.quiz.id attempt.id %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        {% else %}
+                                        <small class="text-muted">Private</small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination for Quiz Attempts -->
+                    {% if quiz_attempts.has_other_pages %}
+                    <nav aria-label="Quiz attempts pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if quiz_attempts.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?attempts_page={{ quiz_attempts.previous_page_number }}{% if request.GET.comments_page %}&comments_page={{ request.GET.comments_page }}{% endif %}">&laquo; Previous</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for page_num in quiz_attempts.paginator.page_range %}
+                            {% if page_num == quiz_attempts.number %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% elif page_num > quiz_attempts.number|add:'-3' and page_num < quiz_attempts.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?attempts_page={{ page_num }}{% if request.GET.comments_page %}&comments_page={{ request.GET.comments_page }}{% endif %}">{{ page_num }}</a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                            
+                            {% if quiz_attempts.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?attempts_page={{ quiz_attempts.next_page_number }}{% if request.GET.comments_page %}&comments_page={{ request.GET.comments_page }}{% endif %}">Next &raquo;</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No quiz attempts yet</h5>
+                        {% if user == profile_user %}
+                        <p class="text-muted">Start taking quizzes to see your history here!</p>
+                        <a href="{% url 'quizzes:home' %}" class="btn btn-primary">
+                            <i class="fas fa-play"></i> Take Your First Quiz
+                        </a>
+                        {% else %}
+                        <p class="text-muted">{{ profile_user.username }} hasn't taken any quizzes yet.</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-comments"></i> Comments ({{ comments.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.is_authenticated %}
+                    <!-- Add Comment Form -->
+                    <div class="mb-4">
+                        <div class="input-group">
+                            <input type="text" id="commentInput" class="form-control" 
+                                   placeholder="Leave a comment for {{ profile_user.username }}..." maxlength="1000">
+                            <button class="btn btn-primary" type="button" onclick="addComment('{{ profile_user.username }}')">
+                                <i class="fas fa-paper-plane"></i> Post
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Comments List -->
+                    <div id="commentsContainer">
+                        {% for comment in comments %}
+                        <div class="comment" id="comment-{{ comment.id }}">
+                            <div class="comment-header">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>
+                                            <a href="{% url 'profiles:profile' comment.commenter.username %}" class="text-decoration-none">
+                                                {{ comment.commenter.username }}
+                                            </a>
+                                        </strong>
+                                        <small class="comment-meta">
+                                            {{ comment.created_at|date:"M d, Y \a\t H:i" }}
+                                            {% if comment.is_edited %}
+                                            <span class="text-muted">(edited)</span>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    {% if user == profile_user %}
+                                    <button class="btn btn-sm btn-outline-danger" 
+                                            onclick="deleteComment({{ comment.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <p class="mb-0">{{ comment.content }}</p>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-comment fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">No comments yet. Be the first to leave a comment!</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Pagination for Comments -->
+                    {% if comments.has_other_pages %}
+                    <nav aria-label="Comments pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if comments.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?comments_page={{ comments.previous_page_number }}{% if request.GET.attempts_page %}&attempts_page={{ request.GET.attempts_page }}{% endif %}">&laquo; Previous</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for page_num in comments.paginator.page_range %}
+                            {% if page_num == comments.number %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% elif page_num > comments.number|add:'-3' and page_num < comments.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?comments_page={{ page_num }}{% if request.GET.attempts_page %}&attempts_page={{ request.GET.attempts_page }}{% endif %}">{{ page_num }}</a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                            
+                            {% if comments.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?comments_page={{ comments.next_page_number }}{% if request.GET.attempts_page %}&attempts_page={{ request.GET.attempts_page }}{% endif %}">Next &raquo;</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Social Links -->
+            {% if profile.website or profile.github_url or profile.linkedin_url %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-link"></i> Links</h5>
+                </div>
+                <div class="card-body">
+                    {% if profile.website %}
+                    <a href="{{ profile.website }}" target="_blank" class="btn btn-outline-primary btn-sm mb-2 w-100">
+                        <i class="fas fa-globe"></i> Website
+                    </a>
+                    {% endif %}
+                    {% if profile.github_url %}
+                    <a href="{{ profile.github_url }}" target="_blank" class="btn btn-outline-dark btn-sm mb-2 w-100">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                    {% endif %}
+                    {% if profile.linkedin_url %}
+                    <a href="{{ profile.linkedin_url }}" target="_blank" class="btn btn-outline-info btn-sm mb-2 w-100">
+                        <i class="fab fa-linkedin"></i> LinkedIn
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Language Breakdown -->
+            {% if quiz_attempts %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie"></i> Quiz Languages</h5>
+                </div>
+                <div class="card-body">
+                    {% regroup quiz_attempts by quiz.language as language_groups %}
+                    {% for language in language_groups %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="language-badge language-{{ language.grouper }} text-white">
+                            {{ language.list.0.quiz.get_language_display }}
+                        </span>
+                        <span class="badge bg-secondary">{{ language.list|length }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Activity -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-clock"></i> Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    {% if quiz_attempts %}
+                    {% for attempt in quiz_attempts|slice:":3" %}
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-trophy text-warning me-2"></i>
+                        <div class="flex-grow-1">
+                            <small>
+                                Scored {{ attempt.score }}% on {{ attempt.quiz.title }}
+                                <br>
+                                <span class="text-muted">{{ attempt.completed_at|timesince }} ago</span>
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted small">No recent activity</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

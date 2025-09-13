@@ -1,0 +1,255 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Leaderboard - QuizHub{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="text-center mb-4">
+            <i class="fas fa-trophy text-warning"></i> Leaderboard
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Top Users -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-crown"></i> Top Performers</h5>
+                <small class="text-muted">Ranked by average score across all quizzes</small>
+            </div>
+            <div class="card-body">
+                {% for user in top_users %}
+                <div class="leaderboard-item">
+                    <div class="rank-badge {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-other{% endif %}">
+                        {{ forloop.counter }}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">
+                                    <a href="{% url 'profiles:profile' user.username %}" class="text-decoration-none">
+                                        {{ user.username }}
+                                        {% if user.first_name or user.last_name %}
+                                        <small class="text-muted">({{ user.first_name }} {{ user.last_name }})</small>
+                                        {% endif %}
+                                    </a>
+                                </h6>
+                                <small class="text-muted">
+                                    {{ user.total_attempts }} quiz{{ user.total_attempts|pluralize }} taken
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <div class="d-flex gap-3">
+                                    <div class="text-center">
+                                        <small class="text-muted">Average</small>
+                                        <br>
+                                        <strong class="text-primary">{{ user.avg_score|floatformat:1 }}%</strong>
+                                    </div>
+                                    <div class="text-center">
+                                        <small class="text-muted">Best</small>
+                                        <br>
+                                        <strong class="text-success">{{ user.best_score }}%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-4">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No quiz attempts yet</h5>
+                    <p class="text-muted">Be the first to take a quiz and appear on the leaderboard!</p>
+                    <a href="{% url 'quizzes:home' %}" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Take a Quiz
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent High Scores -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-fire"></i> Recent High Scores</h5>
+                <small class="text-muted">Scores of 80% or higher</small>
+            </div>
+            <div class="card-body">
+                {% for attempt in recent_attempts %}
+                <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                    <div>
+                        <strong>{{ attempt.user.username }}</strong>
+                        <br>
+                        <small class="text-muted">{{ attempt.quiz.title }}</small>
+                        <br>
+                        <small class="text-muted">{{ attempt.completed_at|date:"M d, H:i" }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-success">{{ attempt.score }}%</span>
+                        <br>
+                        <small class="text-muted">{{ attempt.quiz.get_language_display }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-3">
+                    <i class="fas fa-star fa-2x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">No high scores yet</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if user.is_authenticated %}
+        <!-- Your Stats -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-user"></i> Your Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-2">
+                            <h4 class="mb-1 text-primary">{{ user.quiz_attempts.count }}</h4>
+                            <small class="text-muted">Quizzes Taken</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-2">
+                            <h4 class="mb-1 text-success">
+                                {% if user.quiz_attempts.exists %}
+                                    {{ user.quiz_attempts.aggregate.avg_score|floatformat:1 }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </h4>
+                            <small class="text-muted">Average Score</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded p-2">
+                            <h4 class="mb-1 text-warning">
+                                {% if user.quiz_attempts.exists %}
+                                    {{ user.quiz_attempts.aggregate.max_score|default:0 }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </h4>
+                            <small class="text-muted">Best Score</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded p-2">
+                            <h4 class="mb-1 text-info">{{ user.profile.total_upvotes|default:0 }}</h4>
+                            <small class="text-muted">Upvotes</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="{% url 'profiles:my_profile' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-chart-line"></i> View Full Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Challenge Section -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-target"></i> Challenge Yourself</h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">Ready to climb the leaderboard?</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'quizzes:home' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-play"></i> Take a Quiz
+                    </a>
+                    <a href="{% url 'quizzes:home' %}?language=python" class="btn btn-outline-primary btn-sm">
+                        <i class="fab fa-python"></i> Python Challenge
+                    </a>
+                    <a href="{% url 'quizzes:home' %}?language=javascript" class="btn btn-outline-warning btn-sm">
+                        <i class="fab fa-js"></i> JavaScript Challenge
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Achievement Badges Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-medal"></i> Achievement Levels</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="achievement-badge bronze">
+                            <i class="fas fa-medal fa-2x mb-2"></i>
+                            <h6>Bronze</h6>
+                            <small>Complete 5 quizzes</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="achievement-badge silver">
+                            <i class="fas fa-medal fa-2x mb-2"></i>
+                            <h6>Silver</h6>
+                            <small>70% average score</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="achievement-badge gold">
+                            <i class="fas fa-medal fa-2x mb-2"></i>
+                            <h6>Gold</h6>
+                            <small>85% average score</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="achievement-badge platinum">
+                            <i class="fas fa-crown fa-2x mb-2"></i>
+                            <h6>Platinum</h6>
+                            <small>95% average score</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.achievement-badge {
+    padding: 1rem;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.achievement-badge.bronze {
+    background: linear-gradient(135deg, #cd7f32 0%, #b8860b 100%);
+    color: white;
+}
+
+.achievement-badge.silver {
+    background: linear-gradient(135deg, #c0c0c0 0%, #a8a8a8 100%);
+    color: white;
+}
+
+.achievement-badge.gold {
+    background: linear-gradient(135deg, #ffd700 0%, #daa520 100%);
+    color: #333;
+}
+
+.achievement-badge.platinum {
+    background: linear-gradient(135deg, #e5e4e2 0%, #bcc6cc 100%);
+    color: #333;
+}
+</style>
+{% endblock %}

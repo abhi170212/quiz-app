@@ -1,0 +1,156 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ quiz.title }} - QuizHub{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card quiz-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <span class="language-badge language-{{ quiz.language }} text-white me-2">
+                            {{ quiz.get_language_display }}
+                        </span>
+                        {{ quiz.title }}
+                    </h4>
+                    <span class="badge bg-secondary">{{ quiz.difficulty|title }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ quiz.description }}</p>
+                
+                <div class="row text-center mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="stats-card">
+                            <span class="stats-number">{{ total_questions }}</span>
+                            <small>Questions</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stats-card">
+                            <span class="stats-number">{{ quiz.time_limit }}</span>
+                            <small>Minutes</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stats-card">
+                            <span class="stats-number">{{ quiz.attempts.count }}</span>
+                            <small>Total Attempts</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stats-card">
+                            <span class="stats-number">
+                                {% if quiz.attempts.exists %}
+                                    {{ quiz.attempts.aggregate.avg_score|floatformat:1 }}%
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </span>
+                            <small>Average Score</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quiz-instructions mb-4">
+                    <h5><i class="fas fa-info-circle text-primary"></i> Instructions</h5>
+                    <ul>
+                        <li>This quiz contains {{ total_questions }} multiple-choice questions</li>
+                        <li>You have {{ quiz.time_limit }} minutes to complete the quiz</li>
+                        <li>Each question has 4 options, select the best answer</li>
+                        <li>You can navigate between questions using the navigation buttons</li>
+                        <li>Make sure to submit your quiz before time runs out</li>
+                    </ul>
+                </div>
+
+                {% if user.is_authenticated %}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="{% url 'quizzes:take_quiz' quiz.id %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-play"></i> Start Quiz
+                    </a>
+                    <a href="{% url 'quizzes:home' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Quizzes
+                    </a>
+                </div>
+                {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle"></i>
+                    You need to <a href="{% url 'accounts:login' %}">login</a> to take this quiz.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- User's Previous Attempts -->
+        {% if user.is_authenticated and user_attempts %}
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-history"></i> Your Previous Attempts</h5>
+            </div>
+            <div class="card-body">
+                {% for attempt in user_attempts %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                    <div>
+                        <strong>{{ attempt.score }}%</strong>
+                        <br>
+                        <small class="text-muted">{{ attempt.completed_at|date:"M d, Y" }}</small>
+                    </div>
+                    <div class="text-end">
+                        <small>{{ attempt.correct_answers }}/{{ attempt.total_questions }}</small>
+                        <br>
+                        <a href="{% url 'quizzes:quiz_result' quiz.id attempt.id %}" class="btn btn-sm btn-outline-primary">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quiz Creator Info -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-user"></i> Quiz Creator</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-user-circle fa-3x text-primary me-3"></i>
+                    <div>
+                        <strong>{{ quiz.created_by.username }}</strong>
+                        <br>
+                        <small class="text-muted">Created on {{ quiz.created_at|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent High Scores -->
+        {% if quiz.attempts.exists %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-trophy"></i> Top Scores</h5>
+            </div>
+            <div class="card-body">
+                {% for attempt in quiz.attempts.all|slice:":5" %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <strong>{{ attempt.user.username }}</strong>
+                        <br>
+                        <small class="text-muted">{{ attempt.completed_at|date:"M d" }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-success">{{ attempt.score }}%</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

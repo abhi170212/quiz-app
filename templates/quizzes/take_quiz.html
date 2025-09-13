@@ -1,0 +1,127 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Taking Quiz: {{ quiz.title }} - QuizHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .question-card {
+        display: none;
+    }
+    .question-card:first-child {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="quiz-container">
+    <div class="quiz-header">
+        <h2>{{ quiz.title }}</h2>
+        <p class="mb-0">{{ quiz.get_language_display }} • {{ quiz.difficulty|title }}</p>
+    </div>
+
+    <!-- Timer -->
+    <div id="timer" class="timer">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-clock me-2"></i>
+            <div>
+                <small>Time Remaining</small>
+                <br>
+                <strong class="timer-text">{{ quiz.time_limit }}:00</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="p-3 bg-light border-bottom">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span id="progressText">Question 1 of {{ total_questions }}</span>
+            <span class="text-muted">{{ total_questions }} questions total</span>
+        </div>
+        <div class="quiz-progress">
+            <div class="quiz-progress-bar" style="width: {% widthratio 1 total_questions 100 %}%"></div>
+        </div>
+    </div>
+
+    <!-- Questions -->
+    <div class="p-4">
+        {% for question in questions %}
+        <div class="question-card" data-question-number="{{ forloop.counter }}">
+            <div class="d-flex align-items-start mb-4">
+                <div class="question-number">{{ forloop.counter }}</div>
+                <div class="flex-grow-1">
+                    <h5 class="mb-3">{{ question.question_text }}</h5>
+                    
+                    <div class="options">
+                        <button type="button" class="btn option-btn w-100" 
+                                data-question-id="{{ question.id }}" data-option="A">
+                            <strong>A.</strong> {{ question.option_a }}
+                        </button>
+                        <button type="button" class="btn option-btn w-100" 
+                                data-question-id="{{ question.id }}" data-option="B">
+                            <strong>B.</strong> {{ question.option_b }}
+                        </button>
+                        <button type="button" class="btn option-btn w-100" 
+                                data-question-id="{{ question.id }}" data-option="C">
+                            <strong>C.</strong> {{ question.option_c }}
+                        </button>
+                        <button type="button" class="btn option-btn w-100" 
+                                data-question-id="{{ question.id }}" data-option="D">
+                            <strong>D.</strong> {{ question.option_d }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Navigation -->
+    <div class="p-4 bg-light">
+        <div class="d-flex justify-content-between">
+            <button type="button" id="prevBtn" class="btn btn-outline-secondary" disabled>
+                <i class="fas fa-arrow-left"></i> Previous
+            </button>
+            
+            <div class="btn-group">
+                <button type="button" id="nextBtn" class="btn btn-outline-primary">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+                <button type="button" id="submitBtn" class="btn btn-success" disabled>
+                    <i class="fas fa-check"></i> Submit Quiz (0/{{ total_questions }} answered)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden inputs for JavaScript -->
+<input type="hidden" id="timeLimit" value="{{ time_limit_seconds }}">
+<input type="hidden" id="totalQuestions" value="{{ total_questions }}">
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize quiz app
+    if (typeof QuizApp !== 'undefined') {
+        const quizApp = new QuizApp();
+        quizApp.totalQuestions = {{ total_questions }};
+        
+        // Show only first question initially
+        const questionCards = document.querySelectorAll('.question-card');
+        questionCards.forEach((card, index) => {
+            card.style.display = index === 0 ? 'block' : 'none';
+        });
+    }
+});
+
+// Prevent accidental page reload
+window.addEventListener('beforeunload', function (e) {
+    e.preventDefault();
+    e.returnValue = '';
+});
+</script>
+{% endblock %}

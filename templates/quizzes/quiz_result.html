@@ -1,0 +1,236 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Quiz Results: {{ quiz.title }} - QuizHub{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3>Quiz Results</h3>
+                <h5 class="text-muted">{{ quiz.title }}</h5>
+            </div>
+            <div class="card-body">
+                <!-- Score Summary -->
+                <div class="text-center mb-4">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="stats-card">
+                                <span class="stats-number">{{ attempt.score }}%</span>
+                                <small>Your Score</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stats-card">
+                                <span class="stats-number">{{ attempt.correct_answers }}</span>
+                                <small>Correct Answers</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stats-card">
+                                <span class="stats-number">{{ attempt.total_questions }}</span>
+                                <small>Total Questions</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stats-card">
+                                <span class="stats-number">
+                                    {% if attempt.time_taken %}
+                                        {{ attempt.time_taken.total_seconds|floatformat:0 }}s
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </span>
+                                <small>Time Taken</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Message -->
+                <div class="text-center mb-4">
+                    {% if attempt.score >= 90 %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-trophy fa-2x mb-2"></i>
+                        <h4>Excellent Work!</h4>
+                        <p>You scored {{ attempt.score }}%! Outstanding performance!</p>
+                    </div>
+                    {% elif attempt.score >= 70 %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-thumbs-up fa-2x mb-2"></i>
+                        <h4>Great Job!</h4>
+                        <p>You scored {{ attempt.score }}%! Well done!</p>
+                    </div>
+                    {% elif attempt.score >= 50 %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-star fa-2x mb-2"></i>
+                        <h4>Good Effort!</h4>
+                        <p>You scored {{ attempt.score }}%. Keep practicing to improve!</p>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-secondary">
+                        <i class="fas fa-book fa-2x mb-2"></i>
+                        <h4>Keep Learning!</h4>
+                        <p>You scored {{ attempt.score }}%. Review the material and try again!</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Question Review -->
+                <h5 class="mb-3"><i class="fas fa-list"></i> Question Review</h5>
+                {% for user_answer in user_answers %}
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Question {{ forloop.counter }}</span>
+                        {% if user_answer.is_correct %}
+                        <span class="badge bg-success">Correct</span>
+                        {% else %}
+                        <span class="badge bg-danger">Incorrect</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h6>{{ user_answer.question.question_text }}</h6>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h6>Options:</h6>
+                                <div class="option-review">
+                                    <div class="option {% if user_answer.question.correct_answer == 'A' %}correct{% elif user_answer.selected_answer == 'A' and not user_answer.is_correct %}incorrect{% endif %}">
+                                        <strong>A.</strong> {{ user_answer.question.option_a }}
+                                        {% if user_answer.question.correct_answer == 'A' %}
+                                        <i class="fas fa-check text-success ms-2"></i>
+                                        {% elif user_answer.selected_answer == 'A' and not user_answer.is_correct %}
+                                        <i class="fas fa-times text-danger ms-2"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="option {% if user_answer.question.correct_answer == 'B' %}correct{% elif user_answer.selected_answer == 'B' and not user_answer.is_correct %}incorrect{% endif %}">
+                                        <strong>B.</strong> {{ user_answer.question.option_b }}
+                                        {% if user_answer.question.correct_answer == 'B' %}
+                                        <i class="fas fa-check text-success ms-2"></i>
+                                        {% elif user_answer.selected_answer == 'B' and not user_answer.is_correct %}
+                                        <i class="fas fa-times text-danger ms-2"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="option {% if user_answer.question.correct_answer == 'C' %}correct{% elif user_answer.selected_answer == 'C' and not user_answer.is_correct %}incorrect{% endif %}">
+                                        <strong>C.</strong> {{ user_answer.question.option_c }}
+                                        {% if user_answer.question.correct_answer == 'C' %}
+                                        <i class="fas fa-check text-success ms-2"></i>
+                                        {% elif user_answer.selected_answer == 'C' and not user_answer.is_correct %}
+                                        <i class="fas fa-times text-danger ms-2"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="option {% if user_answer.question.correct_answer == 'D' %}correct{% elif user_answer.selected_answer == 'D' and not user_answer.is_correct %}incorrect{% endif %}">
+                                        <strong>D.</strong> {{ user_answer.question.option_d }}
+                                        {% if user_answer.question.correct_answer == 'D' %}
+                                        <i class="fas fa-check text-success ms-2"></i>
+                                        {% elif user_answer.selected_answer == 'D' and not user_answer.is_correct %}
+                                        <i class="fas fa-times text-danger ms-2"></i>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Your Answer:</h6>
+                                <p>
+                                    <strong>{{ user_answer.selected_answer }}.</strong>
+                                    {% if user_answer.selected_answer == 'A' %}
+                                        {{ user_answer.question.option_a }}
+                                    {% elif user_answer.selected_answer == 'B' %}
+                                        {{ user_answer.question.option_b }}
+                                    {% elif user_answer.selected_answer == 'C' %}
+                                        {{ user_answer.question.option_c }}
+                                    {% elif user_answer.selected_answer == 'D' %}
+                                        {{ user_answer.question.option_d }}
+                                    {% else %}
+                                        No answer selected
+                                    {% endif %}
+                                </p>
+                                
+                                {% if not user_answer.is_correct %}
+                                <h6>Correct Answer:</h6>
+                                <p class="text-success">
+                                    <strong>{{ user_answer.question.correct_answer }}.</strong>
+                                    {% if user_answer.question.correct_answer == 'A' %}
+                                        {{ user_answer.question.option_a }}
+                                    {% elif user_answer.question.correct_answer == 'B' %}
+                                        {{ user_answer.question.option_b }}
+                                    {% elif user_answer.question.correct_answer == 'C' %}
+                                        {{ user_answer.question.option_c }}
+                                    {% elif user_answer.question.correct_answer == 'D' %}
+                                        {{ user_answer.question.option_d }}
+                                    {% endif %}
+                                </p>
+                                {% endif %}
+                                
+                                {% if user_answer.question.explanation %}
+                                <h6>Explanation:</h6>
+                                <p class="text-muted">{{ user_answer.question.explanation }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'quizzes:quiz_detail' quiz.id %}" class="btn btn-primary">
+                    <i class="fas fa-redo"></i> Take Quiz Again
+                </a>
+                <a href="{% url 'quizzes:home' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
+                <a href="{% url 'profiles:my_profile' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-user"></i> View Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Quiz Info -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Quiz Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Language:</strong> {{ quiz.get_language_display }}</p>
+                <p><strong>Difficulty:</strong> {{ quiz.difficulty|title }}</p>
+                <p><strong>Time Limit:</strong> {{ quiz.time_limit }} minutes</p>
+                <p><strong>Completed:</strong> {{ attempt.completed_at|date:"M d, Y \a\t H:i" }}</p>
+            </div>
+        </div>
+
+        <!-- Share Results -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-share"></i> Share Your Results</h5>
+            </div>
+            <div class="card-body text-center">
+                <p>I scored {{ attempt.score }}% on the {{ quiz.title }} quiz!</p>
+                <button class="btn btn-primary btn-sm" onclick="shareResults()">
+                    <i class="fas fa-share"></i> Share
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function shareResults() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Quiz Results - QuizHub',
+            text: `I scored {{ attempt.score }}% on the {{ quiz.title }} quiz!`,
+            url: window.location.href
+        });
+    } else {
+        // Fallback - copy to clipboard
+        const text = `I scored {{ attempt.score }}% on the {{ quiz.title }} quiz! Check out QuizHub: ${window.location.origin}`;
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Results copied to clipboard!');
+        });
+    }
+}
+</script>
+{% endblock %}
