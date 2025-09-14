@@ -1,29 +1,29 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}QuizHub - Home{% endblock %}
+{% block title %}QUIZHUB - HOME{% endblock %}
 
 {% block content %}
 <div class="hero-section mb-5">
     <div class="row align-items-center">
         <div class="col-lg-6">
-            <h1 class="display-4 fw-bold text-primary">
-                <i class="fas fa-code"></i> Welcome to QuizHub
+            <h1 class="display-4 fw-bold text-neo-primary" style="font-size: 3.5rem; text-shadow: 4px 4px 0px var(--neo-secondary);">
+                <i class="fas fa-code" style="transform: rotate(-10deg); display: inline-block;"></i> WELCOME TO QUIZHUB
             </h1>
-            <p class="lead">Test your coding skills with our comprehensive quiz platform featuring multiple programming languages and difficulty levels.</p>
+            <p class="lead" style="font-weight: 700; font-size: 1.3rem; text-transform: uppercase; letter-spacing: -0.5px;">TEST YOUR CODING SKILLS WITH OUR COMPREHENSIVE QUIZ PLATFORM FEATURING MULTIPLE PROGRAMMING LANGUAGES AND DIFFICULTY LEVELS.</p>
             {% if not user.is_authenticated %}
             <div class="mt-4">
-                <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg me-3">
-                    <i class="fas fa-user-plus"></i> Get Started
+                <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg me-3" style="transform: rotate(-1deg);">
+                    <i class="fas fa-user-plus"></i> GET STARTED
                 </a>
-                <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-lg">
-                    <i class="fas fa-sign-in-alt"></i> Login
+                <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-lg" style="transform: rotate(1deg);">
+                    <i class="fas fa-sign-in-alt"></i> LOGIN
                 </a>
             </div>
             {% endif %}
         </div>
         <div class="col-lg-6 text-center">
-            <i class="fas fa-laptop-code" style="font-size: 200px; color: #007bff; opacity: 0.1;"></i>
+            <i class="fas fa-laptop-code" style="font-size: 200px; color: var(--neo-primary); opacity: 0.2; transform: rotate(15deg);"></i>
         </div>
     </div>
 </div>
@@ -34,17 +34,17 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">
-                    <i class="fas fa-filter"></i> Filter by Language
+                    <i class="fas fa-filter"></i> FILTER BY LANGUAGE
                 </h5>
                 <div class="btn-group flex-wrap" role="group">
                     <a href="{% url 'quizzes:home' %}" 
                        class="btn {% if not selected_language %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                        All Languages
+                        ALL LANGUAGES
                     </a>
                     {% for lang_code, lang_name in languages %}
                     <a href="{% url 'quizzes:home' %}?language={{ lang_code }}" 
                        class="btn {% if selected_language == lang_code %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                        {{ lang_name }}
+                        {{ lang_name|upper }}
                     </a>
                     {% endfor %}
                 </div>
@@ -60,9 +60,9 @@
             <h2>
                 <i class="fas fa-list"></i> 
                 {% if selected_language %}
-                    {{ selected_language|title }} Quizzes
+                    {{ selected_language|upper }} QUIZZES
                 {% else %}
-                    Available Quizzes
+                    AVAILABLE QUIZZES
                 {% endif %}
             </h2>
             <span class="badge bg-secondary">{{ quizzes.count }} quiz{{ quizzes.count|pluralize }}</span>
@@ -77,26 +77,26 @@
                         <span class="language-badge language-{{ quiz.language }} text-white">
                             {{ quiz.get_language_display }}
                         </span>
-                        <span class="badge bg-secondary">{{ quiz.difficulty|title }}</span>
+                        <span class="badge bg-secondary">{{ quiz.difficulty|upper }}</span>
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">{{ quiz.title }}</h5>
-                        <p class="card-text">{{ quiz.description|default:"Test your knowledge with this quiz!" }}</p>
+                        <p class="card-text">{{ quiz.description|default:"TEST YOUR KNOWLEDGE WITH THIS QUIZ!" }}</p>
                         
                         <div class="quiz-stats mb-3">
                             <div class="row text-center">
                                 <div class="col-4">
-                                    <small class="text-muted">Questions</small>
+                                    <small class="text-muted" style="font-weight: 700; text-transform: uppercase;">QUESTIONS</small>
                                     <br>
                                     <strong>{{ quiz.total_questions }}</strong>
                                 </div>
                                 <div class="col-4">
-                                    <small class="text-muted">Time Limit</small>
+                                    <small class="text-muted" style="font-weight: 700; text-transform: uppercase;">TIME LIMIT</small>
                                     <br>
-                                    <strong>{{ quiz.time_limit }}m</strong>
+                                    <strong>{{ quiz.time_limit }}M</strong>
                                 </div>
                                 <div class="col-4">
-                                    <small class="text-muted">Attempts</small>
+                                    <small class="text-muted" style="font-weight: 700; text-transform: uppercase;">ATTEMPTS</small>
                                     <br>
                                     <strong>{{ quiz.total_attempts }}</strong>
                                 </div>
@@ -106,15 +106,15 @@
                     <div class="card-footer">
                         <div class="d-grid gap-2">
                             <a href="{% url 'quizzes:quiz_detail' quiz.id %}" class="btn btn-outline-primary">
-                                <i class="fas fa-info-circle"></i> View Details
+                                <i class="fas fa-info-circle"></i> VIEW DETAILS
                             </a>
                             {% if user.is_authenticated %}
                             <a href="{% url 'quizzes:take_quiz' quiz.id %}" class="btn btn-primary">
-                                <i class="fas fa-play"></i> Start Quiz
+                                <i class="fas fa-play"></i> START QUIZ
                             </a>
                             {% else %}
                             <a href="{% url 'accounts:login' %}" class="btn btn-primary">
-                                <i class="fas fa-sign-in-alt"></i> Login to Take Quiz
+                                <i class="fas fa-sign-in-alt"></i> LOGIN TO TAKE QUIZ
                             </a>
                             {% endif %}
                         </div>
@@ -125,18 +125,18 @@
         </div>
         {% else %}
         <div class="text-center py-5">
-            <i class="fas fa-search fa-3x text-muted mb-3"></i>
-            <h3 class="text-muted">No quizzes found</h3>
-            <p class="text-muted">
+            <i class="fas fa-search fa-3x text-muted mb-3" style="transform: rotate(-15deg);"></i>
+            <h3 class="text-muted" style="text-transform: uppercase; font-weight: 900;">NO QUIZZES FOUND</h3>
+            <p class="text-muted" style="font-weight: 600; text-transform: uppercase;">
                 {% if selected_language %}
-                    No quizzes available for {{ selected_language|title }}. Try selecting a different language.
+                    NO QUIZZES AVAILABLE FOR {{ selected_language|upper }}. TRY SELECTING A DIFFERENT LANGUAGE.
                 {% else %}
-                    No quizzes are currently available. Please check back later.
+                    NO QUIZZES ARE CURRENTLY AVAILABLE. PLEASE CHECK BACK LATER.
                 {% endif %}
             </p>
             {% if selected_language %}
             <a href="{% url 'quizzes:home' %}" class="btn btn-primary">
-                <i class="fas fa-arrow-left"></i> View All Quizzes
+                <i class="fas fa-arrow-left"></i> VIEW ALL QUIZZES
             </a>
             {% endif %}
         </div>
@@ -148,12 +148,12 @@
 {% if user.is_authenticated %}
 <div class="row mt-5">
     <div class="col-12">
-        <h3><i class="fas fa-chart-bar"></i> Your Statistics</h3>
+        <h3><i class="fas fa-chart-bar"></i> YOUR STATISTICS</h3>
         <div class="row">
             <div class="col-md-3 mb-3">
                 <div class="stats-card">
                     <span class="stats-number">{{ user.quiz_attempts.count }}</span>
-                    <small>Quizzes Taken</small>
+                    <small style="text-transform: uppercase; font-weight: 700;">QUIZZES TAKEN</small>
                 </div>
             </div>
             <div class="col-md-3 mb-3">
@@ -165,7 +165,7 @@
                             0%
                         {% endif %}
                     </span>
-                    <small>Average Score</small>
+                    <small style="text-transform: uppercase; font-weight: 700;">AVERAGE SCORE</small>
                 </div>
             </div>
             <div class="col-md-3 mb-3">
@@ -177,13 +177,13 @@
                             0%
                         {% endif %}
                     </span>
-                    <small>Best Score</small>
+                    <small style="text-transform: uppercase; font-weight: 700;">BEST SCORE</small>
                 </div>
             </div>
             <div class="col-md-3 mb-3">
                 <div class="stats-card">
                     <span class="stats-number">{{ user.profile.total_upvotes|default:0 }}</span>
-                    <small>Upvotes Received</small>
+                    <small style="text-transform: uppercase; font-weight: 700;">UPVOTES RECEIVED</small>
                 </div>
             </div>
         </div>

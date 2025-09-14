@@ -1,7 +1,7 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}Taking Quiz: {{ quiz.title }} - QuizHub{% endblock %}
+{% block title %}TAKING QUIZ: {{ quiz.title|upper }} - QUIZHUB{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -17,8 +17,8 @@
 {% block content %}
 <div class="quiz-container">
     <div class="quiz-header">
-        <h2>{{ quiz.title }}</h2>
-        <p class="mb-0">{{ quiz.get_language_display }} • {{ quiz.difficulty|title }}</p>
+        <h2>{{ quiz.title|upper }}</h2>
+        <p class="mb-0">{{ quiz.get_language_display|upper }} • {{ quiz.difficulty|upper }}</p>
     </div>
 
     <!-- Timer -->
@@ -26,7 +26,7 @@
         <div class="d-flex align-items-center">
             <i class="fas fa-clock me-2"></i>
             <div>
-                <small>Time Remaining</small>
+                <small style="font-weight: 700; text-transform: uppercase;">TIME REMAINING</small>
                 <br>
                 <strong class="timer-text">{{ quiz.time_limit }}:00</strong>
             </div>
@@ -36,8 +36,8 @@
     <!-- Progress Bar -->
     <div class="p-3 bg-light border-bottom">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <span id="progressText">Question 1 of {{ total_questions }}</span>
-            <span class="text-muted">{{ total_questions }} questions total</span>
+            <span id="progressText" style="font-weight: 700; text-transform: uppercase;">QUESTION 1 OF {{ total_questions }}</span>
+            <span class="text-muted" style="font-weight: 600; text-transform: uppercase;">{{ total_questions }} QUESTIONS TOTAL</span>
         </div>
         <div class="quiz-progress">
             <div class="quiz-progress-bar" style="width: {% widthratio 1 total_questions 100 %}%"></div>
@@ -81,15 +81,15 @@
     <div class="p-4 bg-light">
         <div class="d-flex justify-content-between">
             <button type="button" id="prevBtn" class="btn btn-outline-secondary" disabled>
-                <i class="fas fa-arrow-left"></i> Previous
+                <i class="fas fa-arrow-left"></i> PREVIOUS
             </button>
             
             <div class="btn-group">
                 <button type="button" id="nextBtn" class="btn btn-outline-primary">
-                    Next <i class="fas fa-arrow-right"></i>
+                    NEXT <i class="fas fa-arrow-right"></i>
                 </button>
                 <button type="button" id="submitBtn" class="btn btn-success" disabled>
-                    <i class="fas fa-check"></i> Submit Quiz (0/{{ total_questions }} answered)
+                    <i class="fas fa-check"></i> SUBMIT QUIZ (0/{{ total_questions }} ANSWERED)
                 </button>
             </div>
         </div>
